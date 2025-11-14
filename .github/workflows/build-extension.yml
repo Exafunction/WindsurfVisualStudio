@@ -36,7 +36,7 @@ jobs:
     - name: Set Release Condition
       id: check_release
       run: |
-        $isRelease = "${{ github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/enterprise-release-v') && (github.actor == 'saranshsaini' || github.actor == 'fortenforge') }}"
+        $isRelease = "${{ github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/enterprise-release-v') && (github.actor == 'edwardpark97' || github.actor == 'saranshsaini' || github.actor == 'fortenforge') }}"
         echo "IS_RELEASE=$isRelease" | Out-File -FilePath $env:GITHUB_ENV -Append
         if ($isRelease -eq 'true') {
           $tag = "${{ github.ref_name }}"

@@ -232,6 +232,11 @@ public class LanguageServer
                 {
                     _languageServerVersion = version;
                 }
+                // Only pin to 1.50.100 for specific portal URLs
+                if (portalUrl.Contains(".windsurf.com") || portalUrl.Contains("dstart.com"))
+                {
+                    _languageServerVersion = "1.50.100";
+                }
             }
             catch (Exception)
             {
@@ -725,8 +730,18 @@ public class LanguageServer
                 return JsonConvert.DeserializeObject<T>(await rq.Content.ReadAsStringAsync());
             }
 
-            await _package.LogAsync(
-                $"Error: Failed to send request to {url}, status code: {rq.StatusCode}");
+            // If auth failed, sign out and show login prompt
+            if (rq.StatusCode == HttpStatusCode.Forbidden ||
+                rq.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                await _package.LogAsync("Session expired - please sign in again");
+                await SignOutAsync();
+            }
+            else
+            {
+                await _package.LogAsync(
+                    $"Error: Failed to send request to {url}, status code: {rq.StatusCode}");
+            }
         }
         catch (OperationCanceledException)
         {
@@ -881,7 +896,7 @@ public class LanguageServer
                     remainingToFind -= 1;
                     remainingProjectsToIndexPath.Add(dir);
                 }
-                
+
                 processedProjects.Add(project.Name);
             }
 
@@ -908,7 +923,7 @@ public class LanguageServer
             {
                 await AddFilesToIndexLists(project);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await _package.LogAsync($"Failed to process open project: {ex.Message}");
                 continue;
@@ -924,12 +939,12 @@ public class LanguageServer
             {
                 await AddFilesToIndexLists(project);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 await _package.LogAsync($"Failed to process remaining project: {ex.Message}");
                 continue;
             }
-            if (remainingToFind <=0)
+            if (remainingToFind <= 0)
             {
                 break;
             }
